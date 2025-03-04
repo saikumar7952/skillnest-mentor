@@ -1,12 +1,23 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,7 +38,7 @@ const Navbar = () => {
       )}
     >
       <div className="container-custom flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="relative w-8 h-8">
             <div className="absolute inset-0 bg-primary rounded-md rotate-45 opacity-80"></div>
             <div className="absolute inset-1 bg-white rounded-sm rotate-45"></div>
@@ -36,7 +47,7 @@ const Navbar = () => {
           <span className="font-light text-xl tracking-tight">
             SkillNest
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
@@ -49,12 +60,41 @@ const Navbar = () => {
           <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">
             About
           </a>
-          <Button variant="outline" size="sm" className="mr-2">
-            Login
-          </Button>
-          <Button size="sm">
-            Early Access
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="ml-2">
+                  <User className="h-4 w-4 mr-2" />
+                  Account
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="outline" size="sm" className="mr-2">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/auth?tab=signup">
+                <Button size="sm">
+                  Early Access
+                </Button>
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -103,12 +143,32 @@ const Navbar = () => {
                 About
               </a>
               <div className="flex flex-col space-y-2 mt-2 pt-2 border-t border-border">
-                <Button variant="outline" size="sm">
-                  Login
-                </Button>
-                <Button size="sm">
-                  Early Access
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => setIsMobileMenuOpen(false)}>
+                      Profile
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => {
+                      signOut();
+                      setIsMobileMenuOpen(false);
+                    }}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/auth?tab=signup" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button size="sm" className="w-full">
+                        Early Access
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </nav>
           </div>

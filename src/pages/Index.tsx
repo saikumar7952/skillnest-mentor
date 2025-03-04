@@ -7,8 +7,11 @@ import About from '../components/About';
 import Cta from '../components/Cta';
 import Footer from '../components/Footer';
 import { useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
+  const { user } = useAuth();
+
   // Intersection Observer for fade-in animations
   useEffect(() => {
     const observerOptions = {
