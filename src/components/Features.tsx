@@ -1,5 +1,4 @@
 
-import { Separator } from '@/components/ui/separator';
 import { useState } from 'react';
 import FeatureItem from './features/FeatureItem';
 import FeatureDetail from './features/FeatureDetail';
