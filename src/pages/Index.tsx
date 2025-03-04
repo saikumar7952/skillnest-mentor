@@ -8,9 +8,11 @@ import Cta from '../components/Cta';
 import Footer from '../components/Footer';
 import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Intersection Observer for fade-in animations
   useEffect(() => {
@@ -80,7 +82,10 @@ const Index = () => {
         <Features />
         <Demo />
         <About />
-        <Cta />
+        <Cta 
+          buttonText={user ? "Go to Career Roadmap" : "Sign Up Now"} 
+          buttonAction={() => user ? navigate('/roadmap') : navigate('/auth')}
+        />
       </main>
       <Footer />
     </div>
