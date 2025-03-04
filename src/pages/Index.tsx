@@ -1,12 +1,85 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import Features from '../components/Features';
+import Demo from '../components/Demo';
+import About from '../components/About';
+import Cta from '../components/Cta';
+import Footer from '../components/Footer';
+import { useEffect } from 'react';
 
 const Index = () => {
+  // Intersection Observer for fade-in animations
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    const animatedElements = document.querySelectorAll(
+      '.enter-from-right, .enter-from-left, .enter-from-bottom, .enter-from-top'
+    );
+
+    animatedElements.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      animatedElements.forEach((element) => {
+        observer.unobserve(element);
+      });
+    };
+  }, []);
+
+  // Smooth scrolling for anchor links
+  useEffect(() => {
+    const handleAnchorClick = (e) => {
+      const targetId = e.target.getAttribute('href');
+      if (targetId && targetId.startsWith('#')) {
+        e.preventDefault();
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80, // Adjust for fixed header
+            behavior: 'smooth',
+          });
+        }
+      }
+    };
+
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach((link) => {
+      link.addEventListener('click', handleAnchorClick);
+    });
+
+    return () => {
+      links.forEach((link) => {
+        link.removeEventListener('click', handleAnchorClick);
+      });
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main>
+        <Hero />
+        <Features />
+        <Demo />
+        <About />
+        <Cta />
+      </main>
+      <Footer />
     </div>
   );
 };
