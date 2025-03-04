@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ interface Question {
   question: string;
   category: string;
   estimatedTime: string;
-  difficulty: string;
+  difficulty: string; // This property is being used but wasn't defined in the interface
 }
 
 const MockInterviews = () => {
