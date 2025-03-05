@@ -81,10 +81,7 @@ const Index = () => {
         <Features />
         <Demo />
         <About />
-        <Cta 
-          buttonText={user ? "Go to Career Roadmap" : "Sign Up Now"} 
-          buttonAction={() => user ? navigate('/roadmap') : navigate('/auth')}
-        />
+        <Cta />
       </main>
       <Footer />
     </div>

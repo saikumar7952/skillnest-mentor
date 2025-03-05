@@ -1,4 +1,3 @@
-
 import { Brain, BookOpen, Code, MessageSquare, FileCode, Rocket } from 'lucide-react';
 import { FeatureData } from './types';
 
@@ -11,10 +10,12 @@ export const featuresData: FeatureData[] = [
     detailTitle: "AI that adapts to your learning style",
     detailDescription: "Our AI analyzes your learning patterns, strengths, and weaknesses to create custom educational pathways that evolve as you progress.",
     bullets: [
-      "Real-time adjustments based on performance metrics",
-      "Identifies and targets knowledge gaps with precision",
-      "Optimizes content difficulty to keep you in the learning 'flow state'",
-      "Provides metacognitive insights to improve your learning approach"
+      "Initial Assessment: AI evaluates your current skill level and provides personalized baseline reports",
+      "Personalized Learning Paths: AI generates customized courses that adjust based on your progress",
+      "Interactive Learning Experience: Get real-time explanations and access to a virtual AI mentor",
+      "Performance Tracking & Insights: Receive weekly reports with learning recommendations",
+      "AI-Powered Skill Reinforcement: Adaptive difficulty levels to match your growth",
+      "Integration with Career Roadmap: Connect your learning with industry-specific career guidance"
     ]
   },
   {
