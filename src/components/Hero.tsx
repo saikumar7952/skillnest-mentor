@@ -30,9 +30,11 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-16 animate-fade-up animation-delay-400">
-            <Button size="lg" className="group" as={Link} to="/payment">
-              Get Early Access
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <Button size="lg" className="group" asChild>
+              <Link to="/payment">
+                Get Early Access
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
             <Button size="lg" variant="outline">
               See How It Works

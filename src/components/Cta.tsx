@@ -35,9 +35,11 @@ const Cta = () => {
                 ))}
               </div>
               <div className="mt-8">
-                <Button as={Link} to="/payment" size="lg" className="group">
-                  Get Early Access
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <Button size="lg" className="group" asChild>
+                  <Link to="/payment">
+                    Get Early Access
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Link>
                 </Button>
               </div>
             </div>
