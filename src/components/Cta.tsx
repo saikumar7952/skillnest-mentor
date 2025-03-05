@@ -58,8 +58,8 @@ const Cta = () => {
                   </div>
                   
                   <div className="flex items-baseline">
-                    <span className="text-3xl font-medium">$29</span>
-                    <span className="text-muted-foreground ml-1 line-through text-sm">$58</span>
+                    <span className="text-3xl font-medium">₹2,399</span>
+                    <span className="text-muted-foreground ml-1 line-through text-sm">₹4,799</span>
                     <span className="text-xs text-muted-foreground ml-2">/month</span>
                   </div>
                   

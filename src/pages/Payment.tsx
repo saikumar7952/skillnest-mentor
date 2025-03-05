@@ -16,16 +16,16 @@ const Payment = () => {
   
   const plans = {
     monthly: {
-      price: 29,
-      originalPrice: 58,
+      price: 2399,
+      originalPrice: 4799,
       billingPeriod: '/month',
       savingsText: '',
     },
     yearly: {
-      price: 290,
-      originalPrice: 696,
+      price: 23990,
+      originalPrice: 57588,
       billingPeriod: '/year',
-      savingsText: 'Save $348 (50%)',
+      savingsText: 'Save ₹28,798 (50%)',
     }
   };
 
@@ -117,9 +117,9 @@ const Payment = () => {
                   
                   <div className="mb-6">
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold">${plans[selectedPlan].price}</span>
+                      <span className="text-3xl font-bold">₹{plans[selectedPlan].price}</span>
                       <span className="text-muted-foreground line-through ml-2 text-sm">
-                        ${plans[selectedPlan].originalPrice}
+                        ₹{plans[selectedPlan].originalPrice}
                       </span>
                       <span className="text-sm text-muted-foreground ml-1">
                         {plans[selectedPlan].billingPeriod}
@@ -171,8 +171,8 @@ const Payment = () => {
                       <p className="text-sm text-muted-foreground">{selectedPlan === 'monthly' ? 'Monthly' : 'Annual'} billing</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${plans[selectedPlan].price}</p>
-                      <p className="text-xs text-muted-foreground line-through">${plans[selectedPlan].originalPrice}</p>
+                      <p className="font-medium">₹{plans[selectedPlan].price}</p>
+                      <p className="text-xs text-muted-foreground line-through">₹{plans[selectedPlan].originalPrice}</p>
                     </div>
                   </div>
                 </div>
@@ -215,7 +215,7 @@ const Payment = () => {
                     size="lg"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Processing...' : `Pay $${plans[selectedPlan].price}`}
+                    {isSubmitting ? 'Processing...' : `Pay ₹${plans[selectedPlan].price}`}
                   </Button>
                 </form>
               </div>
