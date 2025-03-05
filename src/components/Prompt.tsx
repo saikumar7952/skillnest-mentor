@@ -4,6 +4,7 @@ import { ArrowUpCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 const Prompt = () => {
   const [prompt, setPrompt] = useState('');
@@ -119,7 +120,7 @@ const Prompt = () => {
           
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              For full access to our Adaptive AI Tutor, <span className="text-primary font-medium">sign up for early access</span>
+              For full access to our Adaptive AI Tutor, <Link to="/payment" className="text-primary font-medium hover:underline">sign up for early access</Link>
             </p>
           </div>
         </div>
