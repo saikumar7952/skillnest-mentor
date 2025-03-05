@@ -3,6 +3,7 @@ import Hero from '../components/Hero';
 import Features from '../components/Features';
 import Demo from '../components/Demo';
 import About from '../components/About';
+import Prompt from '../components/Prompt';
 import Cta from '../components/Cta';
 import Footer from '../components/Footer';
 import { useEffect } from 'react';
@@ -80,6 +81,7 @@ const Index = () => {
         <Hero />
         <Features />
         <Demo />
+        <Prompt />
         <About />
         <Cta />
       </main>
