@@ -1,17 +1,20 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, CreditCard, Shield } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Shield, Smartphone, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const Payment = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'plan' | 'payment'>('plan');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('card');
+  const [upiId, setUpiId] = useState('');
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const plans = {
@@ -28,6 +31,14 @@ const Payment = () => {
       savingsText: 'Save ₹28,798 (50%)',
     }
   };
+
+  const wallets = [
+    { id: 'paytm', name: 'Paytm' },
+    { id: 'phonepe', name: 'PhonePe' },
+    { id: 'gpay', name: 'Google Pay' },
+    { id: 'amazonpay', name: 'Amazon Pay' },
+    { id: 'mobikwik', name: 'MobiKwik' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +62,86 @@ const Payment = () => {
       setStep('plan');
     } else {
       navigate('/');
+    }
+  };
+
+  const renderPaymentForm = () => {
+    switch (paymentMethod) {
+      case 'card':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name on card</Label>
+              <Input id="name" placeholder="John Smith" required />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="cardNumber">Card number</Label>
+              <div className="relative">
+                <Input id="cardNumber" placeholder="1234 5678 9012 3456" required />
+                <CreditCard className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="expiry">Expiry date</Label>
+                <Input id="expiry" placeholder="MM/YY" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="cvc">CVC</Label>
+                <Input id="cvc" placeholder="123" required />
+              </div>
+            </div>
+          </div>
+        );
+      
+      case 'upi':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="upiId">UPI ID</Label>
+              <div className="relative">
+                <Input 
+                  id="upiId" 
+                  placeholder="yourname@upi" 
+                  value={upiId} 
+                  onChange={(e) => setUpiId(e.target.value)} 
+                  required 
+                />
+                <Smartphone className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter your UPI ID (e.g., name@okicici, name@ybl)
+              </p>
+            </div>
+          </div>
+        );
+      
+      case 'wallet':
+        return (
+          <div className="space-y-4">
+            <Label>Select Wallet</Label>
+            <RadioGroup 
+              value={selectedWallet || ''} 
+              onValueChange={setSelectedWallet}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+            >
+              {wallets.map((wallet) => (
+                <div key={wallet.id} className="flex items-center space-x-2">
+                  <RadioGroupItem value={wallet.id} id={wallet.id} />
+                  <Label htmlFor={wallet.id} className="cursor-pointer">{wallet.name}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground mt-1">
+              You will be redirected to the selected wallet to complete the payment
+            </p>
+          </div>
+        );
+      
+      default:
+        return null;
     }
   };
 
@@ -177,30 +268,50 @@ const Payment = () => {
                   </div>
                 </div>
                 
+                <div className="mb-6">
+                  <Label className="mb-3 block">Payment Method</Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div
+                      className={cn(
+                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
+                        paymentMethod === 'card' 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border hover:border-primary/50"
+                      )}
+                      onClick={() => setPaymentMethod('card')}
+                    >
+                      <CreditCard className="h-6 w-6" />
+                      <span className="text-sm">Card</span>
+                    </div>
+                    <div
+                      className={cn(
+                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
+                        paymentMethod === 'upi' 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border hover:border-primary/50"
+                      )}
+                      onClick={() => setPaymentMethod('upi')}
+                    >
+                      <Smartphone className="h-6 w-6" />
+                      <span className="text-sm">UPI</span>
+                    </div>
+                    <div
+                      className={cn(
+                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
+                        paymentMethod === 'wallet' 
+                          ? "border-primary bg-primary/5" 
+                          : "border-border hover:border-primary/50"
+                      )}
+                      onClick={() => setPaymentMethod('wallet')}
+                    >
+                      <Wallet className="h-6 w-6" />
+                      <span className="text-sm">Wallets</span>
+                    </div>
+                  </div>
+                </div>
+                
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name on card</Label>
-                    <Input id="name" placeholder="John Smith" required />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card number</Label>
-                    <div className="relative">
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" required />
-                      <CreditCard className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="expiry">Expiry date</Label>
-                      <Input id="expiry" placeholder="MM/YY" required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvc">CVC</Label>
-                      <Input id="cvc" placeholder="123" required />
-                    </div>
-                  </div>
+                  {renderPaymentForm()}
                   
                   <div className="flex items-center gap-2 pt-2">
                     <Shield className="h-4 w-4 text-muted-foreground" />
@@ -213,7 +324,7 @@ const Payment = () => {
                     type="submit" 
                     className="w-full" 
                     size="lg"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (paymentMethod === 'wallet' && !selectedWallet)}
                   >
                     {isSubmitting ? 'Processing...' : `Pay ₹${plans[selectedPlan].price}`}
                   </Button>
