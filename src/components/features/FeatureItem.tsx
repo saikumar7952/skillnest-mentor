@@ -1,6 +1,6 @@
 
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface FeatureItemProps {
   icon: JSX.Element;
@@ -9,6 +9,7 @@ interface FeatureItemProps {
   active: boolean;
   onClick: (index: number) => void;
   index: number;
+  route?: string; // Add optional route property
 }
 
 const FeatureItem = ({ 
@@ -17,15 +18,27 @@ const FeatureItem = ({
   description, 
   active, 
   onClick, 
-  index 
+  index,
+  route
 }: FeatureItemProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    onClick(index);
+    
+    // If a route is provided, navigate to that route
+    if (route) {
+      navigate(route);
+    }
+  };
+
   return (
     <div 
       className={cn(
         "p-6 rounded-xl transition-all duration-300 cursor-pointer",
         active ? "bg-primary/10" : "hover:bg-secondary"
       )}
-      onClick={() => onClick(index)}
+      onClick={handleClick}
     >
       <div className="flex items-center gap-4">
         <div className={cn(

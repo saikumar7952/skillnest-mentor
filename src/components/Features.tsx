@@ -11,6 +11,16 @@ const Features = () => {
     setActiveFeature(index);
   };
 
+  // Map feature titles to their corresponding routes
+  const featureRoutes = {
+    "Adaptive AI Tutor": "/learning-path",
+    "Coding Challenges": "/coding-challenges",
+    "Mock Interviews": "/mock-interviews",
+    "Resume Feedback": "/resume-analysis",
+    "Career Roadmap": "/roadmap",
+    "Multi-Agent System": "/ai-agents"
+  };
+
   return (
     <section id="features" className="section bg-secondary">
       <div className="container-custom">
@@ -37,6 +47,7 @@ const Features = () => {
                 active={activeFeature === index}
                 onClick={handleFeatureClick}
                 index={index}
+                route={featureRoutes[feature.title]} // Add the route property
               />
             ))}
           </div>
