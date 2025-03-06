@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { formatInr } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { PaymentFormProps, WalletOption } from './types';
+import { PaymentFormProps, WalletOption, PaymentMethodType } from './types';
 import PaymentMethod from './PaymentMethod';
 import CardForm from './CardForm';
 import UPIForm from './UPIForm';
 import WalletForm from './WalletForm';
 
 const PaymentForm = ({ selectedPlan, plans, onBack, isSubmitting, handleSubmit }: PaymentFormProps) => {
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('card');
   const [selectedWallet, setSelectedWallet] = useState('paytm');
   
   const plan = plans[selectedPlan];
