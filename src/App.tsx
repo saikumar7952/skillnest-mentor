@@ -10,6 +10,11 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import CareerRoadmap from "./pages/CareerRoadmap";
 import Payment from "./pages/Payment";
+import CodingChallenges from "./pages/CodingChallenges";
+import MockInterviews from "./pages/MockInterviews";
+import ResumeAnalysis from "./pages/ResumeAnalysis";
+import LearningPath from "./pages/LearningPath";
+import AIAgents from "./pages/AIAgents";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +30,11 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/roadmap" element={<CareerRoadmap />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/coding-challenges" element={<CodingChallenges />} />
+            <Route path="/mock-interviews" element={<MockInterviews />} />
+            <Route path="/resume-analysis" element={<ResumeAnalysis />} />
+            <Route path="/learning-path" element={<LearningPath />} />
+            <Route path="/ai-agents" element={<AIAgents />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -33,3 +33,18 @@ export interface PaymentMethodProps {
   paymentMethod: PaymentMethodType;
   setPaymentMethod: (method: PaymentMethodType) => void;
 }
+
+export interface UPIFormProps {
+  isSubmitting: boolean;
+}
+
+export interface WalletFormProps {
+  isSubmitting: boolean;
+  walletOptions: WalletOption[];
+  selectedWallet: string;
+  setSelectedWallet: (wallet: string) => void;
+}
+
+export interface CardFormProps {
+  isSubmitting: boolean;
+}
