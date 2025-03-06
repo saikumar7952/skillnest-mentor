@@ -1,20 +1,16 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, CreditCard, Shield, Smartphone, Wallet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { PlanType } from '@/components/payment/types';
+import PlanSelection from '@/components/payment/PlanSelection';
+import PaymentForm from '@/components/payment/PaymentForm';
 
 const Payment = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<'plan' | 'payment'>('plan');
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'upi' | 'wallet'>('card');
-  const [upiId, setUpiId] = useState('');
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>('monthly');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const plans = {
@@ -31,14 +27,6 @@ const Payment = () => {
       savingsText: 'Save ₹28,798 (50%)',
     }
   };
-
-  const wallets = [
-    { id: 'paytm', name: 'Paytm' },
-    { id: 'phonepe', name: 'PhonePe' },
-    { id: 'gpay', name: 'Google Pay' },
-    { id: 'amazonpay', name: 'Amazon Pay' },
-    { id: 'mobikwik', name: 'MobiKwik' },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,86 +53,6 @@ const Payment = () => {
     }
   };
 
-  const renderPaymentForm = () => {
-    switch (paymentMethod) {
-      case 'card':
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name on card</Label>
-              <Input id="name" placeholder="John Smith" required />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="cardNumber">Card number</Label>
-              <div className="relative">
-                <Input id="cardNumber" placeholder="1234 5678 9012 3456" required />
-                <CreditCard className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expiry">Expiry date</Label>
-                <Input id="expiry" placeholder="MM/YY" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cvc">CVC</Label>
-                <Input id="cvc" placeholder="123" required />
-              </div>
-            </div>
-          </div>
-        );
-      
-      case 'upi':
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="upiId">UPI ID</Label>
-              <div className="relative">
-                <Input 
-                  id="upiId" 
-                  placeholder="yourname@upi" 
-                  value={upiId} 
-                  onChange={(e) => setUpiId(e.target.value)} 
-                  required 
-                />
-                <Smartphone className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter your UPI ID (e.g., name@okicici, name@ybl)
-              </p>
-            </div>
-          </div>
-        );
-      
-      case 'wallet':
-        return (
-          <div className="space-y-4">
-            <Label>Select Wallet</Label>
-            <RadioGroup 
-              value={selectedWallet || ''} 
-              onValueChange={setSelectedWallet}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-            >
-              {wallets.map((wallet) => (
-                <div key={wallet.id} className="flex items-center space-x-2">
-                  <RadioGroupItem value={wallet.id} id={wallet.id} />
-                  <Label htmlFor={wallet.id} className="cursor-pointer">{wallet.name}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-            <p className="text-xs text-muted-foreground mt-1">
-              You will be redirected to the selected wallet to complete the payment
-            </p>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="container-custom max-w-screen-lg py-8">
@@ -165,172 +73,20 @@ const Payment = () => {
         
         <div className="bg-white rounded-xl border border-border shadow-lg overflow-hidden">
           {step === 'plan' ? (
-            <div className="p-6">
-              <h2 className="text-xl font-medium mb-6">Choose Your Plan</h2>
-              
-              <div className="flex justify-center mb-8">
-                <div className="inline-flex p-1 rounded-full border border-border">
-                  <button
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm transition-all",
-                      selectedPlan === 'monthly' 
-                        ? "bg-primary text-white" 
-                        : "hover:bg-secondary"
-                    )}
-                    onClick={() => setSelectedPlan('monthly')}
-                  >
-                    Monthly
-                  </button>
-                  <button
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm transition-all",
-                      selectedPlan === 'yearly' 
-                        ? "bg-primary text-white" 
-                        : "hover:bg-secondary"
-                    )}
-                    onClick={() => setSelectedPlan('yearly')}
-                  >
-                    Yearly
-                  </button>
-                </div>
-              </div>
-              
-              <div className="max-w-md mx-auto">
-                <div className="border border-primary/30 rounded-xl p-6 bg-primary/5 relative">
-                  <div className="absolute -top-3 right-4 bg-primary text-white text-xs px-3 py-1 rounded-full">
-                    50% OFF
-                  </div>
-                  
-                  <div className="mb-6">
-                    <h3 className="text-xl font-medium mb-2">Early Access Plan</h3>
-                    <p className="text-sm text-muted-foreground">Get full access to all features</p>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <div className="flex items-baseline">
-                      <span className="text-3xl font-bold">₹{plans[selectedPlan].price}</span>
-                      <span className="text-muted-foreground line-through ml-2 text-sm">
-                        ₹{plans[selectedPlan].originalPrice}
-                      </span>
-                      <span className="text-sm text-muted-foreground ml-1">
-                        {plans[selectedPlan].billingPeriod}
-                      </span>
-                    </div>
-                    {plans[selectedPlan].savingsText && (
-                      <p className="text-sm text-primary mt-1">{plans[selectedPlan].savingsText}</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    {[
-                      "Full access to all AI mentors",
-                      "Unlimited learning sessions",
-                      "Career planning tools",
-                      "Mock interviews & resume reviews",
-                      "Priority support"
-                    ].map((feature, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button 
-                    className="w-full" 
-                    size="lg" 
-                    onClick={() => setStep('payment')}
-                  >
-                    Continue to Payment
-                  </Button>
-                  
-                  <p className="text-xs text-center text-muted-foreground mt-4">
-                    * Early access pricing. Will increase when we launch.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <PlanSelection 
+              selectedPlan={selectedPlan}
+              setSelectedPlan={setSelectedPlan}
+              onContinue={() => setStep('payment')}
+              plans={plans}
+            />
           ) : (
-            <div className="p-6">
-              <h2 className="text-xl font-medium mb-6">Payment Details</h2>
-              
-              <div className="max-w-md mx-auto">
-                <div className="mb-6 p-4 rounded-lg bg-secondary/30 border border-border">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Early Access Plan</p>
-                      <p className="text-sm text-muted-foreground">{selectedPlan === 'monthly' ? 'Monthly' : 'Annual'} billing</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">₹{plans[selectedPlan].price}</p>
-                      <p className="text-xs text-muted-foreground line-through">₹{plans[selectedPlan].originalPrice}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <Label className="mb-3 block">Payment Method</Label>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div
-                      className={cn(
-                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
-                        paymentMethod === 'card' 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-primary/50"
-                      )}
-                      onClick={() => setPaymentMethod('card')}
-                    >
-                      <CreditCard className="h-6 w-6" />
-                      <span className="text-sm">Card</span>
-                    </div>
-                    <div
-                      className={cn(
-                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
-                        paymentMethod === 'upi' 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-primary/50"
-                      )}
-                      onClick={() => setPaymentMethod('upi')}
-                    >
-                      <Smartphone className="h-6 w-6" />
-                      <span className="text-sm">UPI</span>
-                    </div>
-                    <div
-                      className={cn(
-                        "border rounded-lg p-3 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center",
-                        paymentMethod === 'wallet' 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-primary/50"
-                      )}
-                      onClick={() => setPaymentMethod('wallet')}
-                    >
-                      <Wallet className="h-6 w-6" />
-                      <span className="text-sm">Wallets</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {renderPaymentForm()}
-                  
-                  <div className="flex items-center gap-2 pt-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      Your payment information is secure and encrypted
-                    </p>
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    size="lg"
-                    disabled={isSubmitting || (paymentMethod === 'wallet' && !selectedWallet)}
-                  >
-                    {isSubmitting ? 'Processing...' : `Pay ₹${plans[selectedPlan].price}`}
-                  </Button>
-                </form>
-              </div>
-            </div>
+            <PaymentForm 
+              selectedPlan={selectedPlan}
+              plans={plans}
+              onBack={goBack}
+              isSubmitting={isSubmitting}
+              handleSubmit={handleSubmit}
+            />
           )}
         </div>
       </div>
