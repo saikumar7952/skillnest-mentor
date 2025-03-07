@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ArrowUpCircle, Loader2 } from 'lucide-react';
+import { ArrowUpCircle, Loader2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -119,9 +119,13 @@ const Prompt = () => {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              For full access to our AI-powered tools, <Link to="/doubt-solver" className="text-primary font-medium hover:underline">try our AI Doubt Solver</Link> or <Link to="/payment" className="text-primary font-medium hover:underline">sign up for early access</Link>
-            </p>
+            <Link 
+              to="/doubt-solver" 
+              className="inline-flex items-center gap-1.5 text-primary font-medium hover:underline transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Try our full AI Doubt Solver for more advanced coding help
+            </Link>
           </div>
         </div>
       </div>

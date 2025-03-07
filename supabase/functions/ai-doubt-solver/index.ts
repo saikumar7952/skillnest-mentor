@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt, language } = await req.json();
+    const { prompt, language, includeCode } = await req.json();
     
     if (!prompt) {
       throw new Error("Prompt is required");
@@ -25,9 +25,17 @@ serve(async (req) => {
       throw new Error("OpenAI API key not found");
     }
 
-    const systemPrompt = language 
-      ? `You are a helpful coding assistant specialized in ${language} programming. Provide clear, concise explanations with relevant code examples when appropriate. Focus on best practices and clear explanations.`
-      : `You are a helpful coding assistant. Provide clear, concise explanations with relevant code examples when appropriate. Focus on best practices and clear explanations.`;
+    let systemPrompt = "You are a helpful coding assistant. ";
+    
+    if (language) {
+      systemPrompt += `You are specialized in ${language} programming. `;
+    }
+    
+    systemPrompt += "Provide clear, concise explanations with relevant code examples when appropriate. Format code blocks with proper syntax highlighting. Focus on best practices and clear explanations.";
+    
+    if (includeCode) {
+      systemPrompt += " Always include practical code examples in your responses.";
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,7 +50,7 @@ serve(async (req) => {
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 1500,
       }),
     });
 
