@@ -31,11 +31,13 @@ serve(async (req) => {
       systemPrompt += `You are specialized in ${language} programming. `;
     }
     
-    systemPrompt += "Provide clear, concise explanations with relevant code examples when appropriate. Format code blocks with proper syntax highlighting. Focus on best practices and clear explanations.";
+    systemPrompt += "Provide clear, concise explanations with relevant code examples when appropriate. Format code blocks with proper syntax highlighting using markdown triple backticks. Focus on best practices and clear explanations.";
     
     if (includeCode) {
       systemPrompt += " Always include practical code examples in your responses.";
     }
+
+    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with model: gpt-4o-mini`);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,6 +64,7 @@ serve(async (req) => {
 
     const data = await response.json();
     const answer = data.choices[0].message.content;
+    console.log(`Generated response of length: ${answer.length} characters`);
 
     return new Response(
       JSON.stringify({ answer }),

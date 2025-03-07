@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const Prompt = () => {
   const [prompt, setPrompt] = useState('');
@@ -23,20 +24,24 @@ const Prompt = () => {
     setResponse('');
     
     try {
-      // Simulate API call to AI service
-      // In a real implementation, this would connect to your AI backend
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const sampleResponses = [
-        "I've analyzed your question and created a personalized learning path. Let's start by breaking down the core concepts before moving to more advanced topics.",
-        "Based on your question, I recommend focusing on these key areas: 1) fundamental principles, 2) practical applications, and 3) advanced techniques. Would you like me to elaborate on any of these?",
-        "Great question! Here's a step-by-step approach to solving this problem. First, let's identify what you already know and what you need to learn."
-      ];
-      
-      const aiResponse = sampleResponses[Math.floor(Math.random() * sampleResponses.length)];
-      setResponse(aiResponse);
-      
-      toast.success('AI mentor responded to your question');
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('ai-doubt-solver', {
+        body: { 
+          prompt: prompt,
+          includeCode: true 
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data?.answer) {
+        setResponse(data.answer);
+        toast.success('AI mentor responded to your question');
+      } else {
+        throw new Error('No answer received');
+      }
     } catch (error) {
       console.error('Error processing prompt:', error);
       toast.error('Failed to get a response. Please try again.');
@@ -99,7 +104,15 @@ const Prompt = () => {
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm leading-relaxed">{response}</p>
+                    <div 
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: response
+                          .replace(/\n/g, '<br/>')
+                          .replace(/```([a-z]*)([\s\S]*?)```/g, (_, lang, code) => 
+                            `<div class="bg-gray-800 text-gray-100 p-3 rounded-md my-2 overflow-x-auto font-mono text-sm"><div class="flex justify-between items-center mb-2"><span class="text-xs text-gray-400">${lang || 'code'}</span></div>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`)
+                      }}
+                    />
                     
                     <div className="mt-4 flex flex-wrap gap-2">
                       <Button size="sm" variant="outline" className="text-xs rounded-full">
