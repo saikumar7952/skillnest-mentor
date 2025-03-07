@@ -15,6 +15,7 @@ import MockInterviews from "./pages/MockInterviews";
 import ResumeAnalysis from "./pages/ResumeAnalysis";
 import LearningPath from "./pages/LearningPath";
 import AIAgents from "./pages/AIAgents";
+import DoubtSolver from "./pages/DoubtSolver";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/resume-analysis" element={<ResumeAnalysis />} />
             <Route path="/learning-path" element={<LearningPath />} />
             <Route path="/ai-agents" element={<AIAgents />} />
+            <Route path="/doubt-solver" element={<DoubtSolver />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

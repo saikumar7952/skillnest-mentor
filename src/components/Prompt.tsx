@@ -120,7 +120,7 @@ const Prompt = () => {
           
           <div className="mt-6 text-center">
             <p className="text-xs text-muted-foreground">
-              For full access to our Adaptive AI Tutor, <Link to="/payment" className="text-primary font-medium hover:underline">sign up for early access</Link>
+              For full access to our AI-powered tools, <Link to="/doubt-solver" className="text-primary font-medium hover:underline">try our AI Doubt Solver</Link> or <Link to="/payment" className="text-primary font-medium hover:underline">sign up for early access</Link>
             </p>
           </div>
         </div>
