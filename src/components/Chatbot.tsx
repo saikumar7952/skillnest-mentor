@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, RefreshCw, ChevronDown, X } from 'lucide-react';
+import { Send, User, Bot, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -37,7 +37,7 @@ const Chatbot = () => {
     
     if (!input.trim() || isLoading) return;
     
-    const userMessage = { role: 'user', content: input };
+    const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -56,7 +56,7 @@ const Chatbot = () => {
       }
 
       if (data) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
+        setMessages(prev => [...prev, { role: 'assistant' as const, content: data.content }]);
       } else {
         throw new Error('No response received');
       }
