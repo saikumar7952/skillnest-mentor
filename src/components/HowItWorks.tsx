@@ -1,5 +1,7 @@
 
 import { BookOpen, Code, MessageSquare, FileCode, Brain, Rocket } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from './ui/button';
 
 const HowItWorks = () => {
   return (
@@ -16,7 +18,7 @@ const HowItWorks = () => {
           {steps.map((step, index) => (
             <div 
               key={index} 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300"
+              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
             >
               <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
@@ -24,7 +26,12 @@ const HowItWorks = () => {
                 </div>
                 <h3 className="text-xl font-medium">{step.title}</h3>
               </div>
-              <p className="text-muted-foreground">{step.description}</p>
+              <p className="text-muted-foreground mb-4 flex-grow">{step.description}</p>
+              <Link to={step.route} className="mt-auto">
+                <Button variant="outline" className="w-full">
+                  Learn More
+                </Button>
+              </Link>
             </div>
           ))}
         </div>
@@ -37,32 +44,38 @@ const steps = [
   {
     title: "Assessment",
     description: "Complete a quick skills assessment to help our AI understand your current level and learning goals.",
-    icon: <Brain className="h-6 w-6" />
+    icon: <Brain className="h-6 w-6" />,
+    route: "/learning-path"
   },
   {
     title: "Personalized Plan",
     description: "Receive a customized learning path based on your assessment results and career objectives.",
-    icon: <BookOpen className="h-6 w-6" />
+    icon: <BookOpen className="h-6 w-6" />,
+    route: "/roadmap"
   },
   {
     title: "Learn & Practice",
     description: "Access AI-powered lessons, coding challenges, and interactive tutorials tailored to your needs.",
-    icon: <Code className="h-6 w-6" />
+    icon: <Code className="h-6 w-6" />,
+    route: "/coding-challenges"
   },
   {
     title: "Get Support",
     description: "Ask questions and receive help from our AI assistant whenever you encounter difficulties.",
-    icon: <MessageSquare className="h-6 w-6" />
+    icon: <MessageSquare className="h-6 w-6" />,
+    route: "/doubt-solver"
   },
   {
     title: "Prepare for Jobs",
     description: "Practice mock interviews and get AI feedback on your resume to improve your job prospects.",
-    icon: <FileCode className="h-6 w-6" />
+    icon: <FileCode className="h-6 w-6" />,
+    route: "/resume-analysis"
   },
   {
     title: "Advance Your Career",
     description: "Track your progress and receive recommendations for further skill development to meet your career goals.",
-    icon: <Rocket className="h-6 w-6" />
+    icon: <Rocket className="h-6 w-6" />,
+    route: "/ai-agents"
   }
 ];
 
