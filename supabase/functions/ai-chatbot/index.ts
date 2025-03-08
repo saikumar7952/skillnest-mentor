@@ -20,21 +20,37 @@ serve(async (req) => {
       throw new Error("Valid messages array is required");
     }
 
+    // First try DeepSeek API key, then fall back to FAST API key
     const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
-    if (!deepSeekApiKey) {
-      throw new Error("DeepSeek API key not found");
+    const fastApiKey = Deno.env.get('FAST_API_KEY');
+    
+    // Check which API we'll use
+    let apiUrl, apiKey, modelName;
+    
+    if (deepSeekApiKey) {
+      console.log("Using DeepSeek API");
+      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+      apiKey = deepSeekApiKey;
+      modelName = 'deepseek-chat';
+    } else if (fastApiKey) {
+      console.log("Using FAST API");
+      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
+      apiKey = fastApiKey;
+      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
+    } else {
+      throw new Error("No AI API key found (DEEPSEEK_API_KEY or FAST_API_KEY)");
     }
 
-    console.log(`Processing chat with ${messages.length} messages`);
+    console.log(`Processing chat with ${messages.length} messages using ${modelName}`);
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${deepSeekApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-chat', // Using DeepSeek's chat model
+        model: modelName,
         messages: [
           { role: 'system', content: 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.' },
           ...messages
@@ -46,8 +62,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('DeepSeek API error:', error);
-      throw new Error(`DeepSeek API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('AI API error:', error);
+      throw new Error(`AI API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();

@@ -20,9 +20,25 @@ serve(async (req) => {
       throw new Error("Prompt is required");
     }
 
+    // First try DeepSeek API key, then fall back to FAST API key
     const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
-    if (!deepSeekApiKey) {
-      throw new Error("DeepSeek API key not found");
+    const fastApiKey = Deno.env.get('FAST_API_KEY');
+    
+    // Check which API we'll use
+    let apiUrl, apiKey, modelName;
+    
+    if (deepSeekApiKey) {
+      console.log("Using DeepSeek API");
+      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+      apiKey = deepSeekApiKey;
+      modelName = 'deepseek-coder'; // Using DeepSeek's coder model for programming questions
+    } else if (fastApiKey) {
+      console.log("Using FAST API");
+      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
+      apiKey = fastApiKey;
+      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
+    } else {
+      throw new Error("No AI API key found (DEEPSEEK_API_KEY or FAST_API_KEY)");
     }
 
     let systemPrompt = "You are a helpful coding assistant. ";
@@ -37,16 +53,16 @@ serve(async (req) => {
       systemPrompt += " Always include practical code examples in your responses.";
     }
 
-    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with DeepSeek's model`);
+    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with ${modelName}`);
 
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${deepSeekApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-coder', // Using DeepSeek's coder model for programming questions
+        model: modelName,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -58,8 +74,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('DeepSeek API error:', error);
-      throw new Error(`DeepSeek API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('AI API error:', error);
+      throw new Error(`AI API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();

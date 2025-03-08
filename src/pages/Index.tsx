@@ -8,6 +8,7 @@ import Prompt from '../components/Prompt';
 import Cta from '../components/Cta';
 import Footer from '../components/Footer';
 import Chatbot from '../components/Chatbot';
+import HowItWorks from '../components/HowItWorks';
 import { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -82,6 +83,7 @@ const Index = () => {
       <main>
         <Hero />
         <Features />
+        <HowItWorks />
         <Demo />
         <Prompt />
         <About />
