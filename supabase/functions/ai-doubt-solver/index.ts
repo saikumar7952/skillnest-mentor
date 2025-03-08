@@ -24,6 +24,10 @@ serve(async (req) => {
     const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
     const fastApiKey = Deno.env.get('FAST_API_KEY');
     
+    if (!deepSeekApiKey && !fastApiKey) {
+      throw new Error("No AI API key found (DEEPSEEK_API_KEY or FAST_API_KEY)");
+    }
+    
     // Check which API we'll use
     let apiUrl, apiKey, modelName;
     
@@ -37,8 +41,6 @@ serve(async (req) => {
       apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
       apiKey = fastApiKey;
       modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
-    } else {
-      throw new Error("No AI API key found (DEEPSEEK_API_KEY or FAST_API_KEY)");
     }
 
     let systemPrompt = "You are a helpful coding assistant. ";

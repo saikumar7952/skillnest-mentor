@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, RefreshCw, X } from 'lucide-react';
+import { Send, User, Bot, RefreshCw, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -17,12 +17,13 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Hi there! I\'m your SkillNest assistant. How can I help you today?'
+      content: 'Hi there! I\'m your SkillNest assistant. How can I help you with your learning journey today?'
     }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -31,6 +32,15 @@ const Chatbot = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +75,7 @@ const Chatbot = () => {
       toast.error('Failed to get a response. Please try again.');
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.' 
+        content: 'Sorry, I encountered an error. Please try again later.' 
       }]);
     } finally {
       setIsLoading(false);
@@ -75,7 +85,7 @@ const Chatbot = () => {
   const resetChat = () => {
     setMessages([{
       role: 'assistant',
-      content: 'Hi there! I\'m your SkillNest assistant. How can I help you today?'
+      content: 'Hi there! I\'m your SkillNest assistant. How can I help you with your learning journey today?'
     }]);
   };
 
@@ -88,6 +98,7 @@ const Chatbot = () => {
           "fixed bottom-6 right-6 z-50 p-4 rounded-full shadow-lg transition-all duration-300",
           isOpen ? "bg-gray-700 rotate-90" : "bg-primary hover:bg-primary/90"
         )}
+        aria-label={isOpen ? "Close chat" : "Open chat"}
       >
         {isOpen ? (
           <X className="h-6 w-6 text-white" />
@@ -181,9 +192,10 @@ const Chatbot = () => {
         {/* Input area */}
         <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
           <Input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
+            placeholder="Ask me anything..."
             disabled={isLoading}
             className="flex-1"
           />
@@ -191,8 +203,13 @@ const Chatbot = () => {
             type="submit" 
             size="icon" 
             disabled={isLoading || !input.trim()}
+            className={isLoading ? "opacity-50" : ""}
           >
-            <Send className="h-4 w-4" />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </form>
       </div>
