@@ -1,7 +1,8 @@
 
-import { BookOpen, Code, MessageSquare, FileCode, Brain, Rocket } from 'lucide-react';
+import { BookOpen, Code, MessageSquare, FileCode, Brain, Rocket, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from './ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
 
 const HowItWorks = () => {
   return (
@@ -16,23 +17,30 @@ const HowItWorks = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {steps.map((step, index) => (
-            <div 
+            <Card 
               key={index} 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
+              className="border border-gray-100 hover:shadow-md transition-all duration-300 h-full"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  {step.icon}
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                    {step.icon}
+                  </div>
+                  <CardTitle className="text-xl">{step.title}</CardTitle>
                 </div>
-                <h3 className="text-xl font-medium">{step.title}</h3>
-              </div>
-              <p className="text-muted-foreground mb-4 flex-grow">{step.description}</p>
-              <Link to={step.route} className="mt-auto">
-                <Button variant="outline" className="w-full">
-                  Learn More
-                </Button>
-              </Link>
-            </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{step.description}</p>
+              </CardContent>
+              <CardFooter>
+                <Link to={step.route} className="w-full">
+                  <Button variant="outline" className="w-full group">
+                    Learn More
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       </div>
