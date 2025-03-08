@@ -20,21 +20,21 @@ serve(async (req) => {
       throw new Error("Valid messages array is required");
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error("OpenAI API key not found");
+    const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
+    if (!deepSeekApiKey) {
+      throw new Error("DeepSeek API key not found");
     }
 
     console.log(`Processing chat with ${messages.length} messages`);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${deepSeekApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Using gpt-3.5-turbo instead of gpt-4o-mini to avoid quota issues
+        model: 'deepseek-chat', // Using DeepSeek's chat model
         messages: [
           { role: 'system', content: 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.' },
           ...messages
@@ -46,8 +46,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('DeepSeek API error:', error);
+      throw new Error(`DeepSeek API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();

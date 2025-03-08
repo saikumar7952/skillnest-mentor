@@ -20,9 +20,9 @@ serve(async (req) => {
       throw new Error("Prompt is required");
     }
 
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      throw new Error("OpenAI API key not found");
+    const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
+    if (!deepSeekApiKey) {
+      throw new Error("DeepSeek API key not found");
     }
 
     let systemPrompt = "You are a helpful coding assistant. ";
@@ -37,16 +37,16 @@ serve(async (req) => {
       systemPrompt += " Always include practical code examples in your responses.";
     }
 
-    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with model: gpt-4o-mini`);
+    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with DeepSeek's model`);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${deepSeekApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'deepseek-coder', // Using DeepSeek's coder model for programming questions
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
@@ -58,8 +58,8 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('DeepSeek API error:', error);
+      throw new Error(`DeepSeek API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
