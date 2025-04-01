@@ -20,29 +20,16 @@ serve(async (req) => {
       throw new Error("Prompt is required");
     }
 
-    // First try DeepSeek API key, then fall back to FAST API key
+    // Try API keys in order: Gemini, DeepSeek, FAST
+    const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDWWJW4xqbHpW7LbFMS0PehZSNasLGPZZo';
     const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
     const fastApiKey = Deno.env.get('FAST_API_KEY');
     
-    if (!deepSeekApiKey && !fastApiKey) {
-      throw new Error("No AI API key found (DEEPSEEK_API_KEY or FAST_API_KEY)");
+    if (!geminiApiKey && !deepSeekApiKey && !fastApiKey) {
+      throw new Error("No AI API key found (GEMINI_API_KEY, DEEPSEEK_API_KEY, or FAST_API_KEY)");
     }
     
-    // Check which API we'll use
-    let apiUrl, apiKey, modelName;
-    
-    if (deepSeekApiKey) {
-      console.log("Using DeepSeek API");
-      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
-      apiKey = deepSeekApiKey;
-      modelName = 'deepseek-coder'; // Using DeepSeek's coder model for programming questions
-    } else if (fastApiKey) {
-      console.log("Using FAST API");
-      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
-      apiKey = fastApiKey;
-      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
-    }
-
+    // Prepare system prompt
     let systemPrompt = "You are a helpful coding assistant. ";
     
     if (language) {
@@ -54,16 +41,53 @@ serve(async (req) => {
     if (includeCode) {
       systemPrompt += " Always include practical code examples in your responses.";
     }
-
-    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with ${modelName}`);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    
+    // Check which API we'll use
+    let apiUrl, apiKey, modelName, requestBody, transformResponse;
+    
+    if (geminiApiKey) {
+      console.log("Using Gemini API");
+      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+      apiKey = geminiApiKey;
+      modelName = 'gemini-pro';
+      
+      // Format for Gemini API
+      requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: systemPrompt }
+            ]
+          },
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1500,
+        }
+      };
+      
+      // Transform Gemini API response to expected format
+      transformResponse = (data) => {
+        if (!data.candidates || data.candidates.length === 0) {
+          throw new Error("No response generated from Gemini");
+        }
+        return { answer: data.candidates[0].content.parts[0].text };
+      };
+      
+      // Add API key as query param for Gemini
+      apiUrl = `${apiUrl}?key=${apiKey}`;
+    } else if (deepSeekApiKey) {
+      console.log("Using DeepSeek API");
+      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
+      apiKey = deepSeekApiKey;
+      modelName = 'deepseek-coder';
+      
+      requestBody = {
         model: modelName,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -71,7 +95,49 @@ serve(async (req) => {
         ],
         temperature: 0.7,
         max_tokens: 1500,
-      }),
+      };
+      
+      // Transform DeepSeek API response
+      transformResponse = (data) => {
+        return { answer: data.choices[0].message.content };
+      };
+    } else if (fastApiKey) {
+      console.log("Using FAST API");
+      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
+      apiKey = fastApiKey;
+      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
+      
+      requestBody = {
+        model: modelName,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500,
+      };
+      
+      // Transform FAST API response
+      transformResponse = (data) => {
+        return { answer: data.choices[0].message.content };
+      };
+    }
+
+    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with ${modelName}`);
+
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    // Add authorization header for DeepSeek and FAST APIs
+    if (deepSeekApiKey || fastApiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -81,11 +147,11 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const answer = data.choices[0].message.content;
-    console.log(`Generated response of length: ${answer.length} characters`);
+    const result = transformResponse(data);
+    console.log(`Generated response of length: ${result.answer.length} characters`);
 
     return new Response(
-      JSON.stringify({ answer }),
+      JSON.stringify(result),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
