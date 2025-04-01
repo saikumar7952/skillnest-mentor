@@ -20,13 +20,11 @@ serve(async (req) => {
       throw new Error("Prompt is required");
     }
 
-    // Try API keys in order: Gemini, DeepSeek, FAST
+    // Use only Gemini API
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDWWJW4xqbHpW7LbFMS0PehZSNasLGPZZo';
-    const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
-    const fastApiKey = Deno.env.get('FAST_API_KEY');
     
-    if (!geminiApiKey && !deepSeekApiKey && !fastApiKey) {
-      throw new Error("No AI API key found (GEMINI_API_KEY, DEEPSEEK_API_KEY, or FAST_API_KEY)");
+    if (!geminiApiKey) {
+      throw new Error("Gemini API key is required");
     }
     
     // Prepare system prompt
@@ -42,99 +40,37 @@ serve(async (req) => {
       systemPrompt += " Always include practical code examples in your responses.";
     }
     
-    // Check which API we'll use
-    let apiUrl, apiKey, modelName, requestBody, transformResponse;
+    console.log("Using Gemini API");
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
     
-    if (geminiApiKey) {
-      console.log("Using Gemini API");
-      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-      apiKey = geminiApiKey;
-      modelName = 'gemini-pro';
-      
-      // Format for Gemini API
-      requestBody = {
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt }
-            ]
-          },
-          {
-            parts: [
-              { text: prompt }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1500,
+    // Format for Gemini API
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            { text: systemPrompt }
+          ]
+        },
+        {
+          parts: [
+            { text: prompt }
+          ]
         }
-      };
-      
-      // Transform Gemini API response to expected format
-      transformResponse = (data) => {
-        if (!data.candidates || data.candidates.length === 0) {
-          throw new Error("No response generated from Gemini");
-        }
-        return { answer: data.candidates[0].content.parts[0].text };
-      };
-      
-      // Add API key as query param for Gemini
-      apiUrl = `${apiUrl}?key=${apiKey}`;
-    } else if (deepSeekApiKey) {
-      console.log("Using DeepSeek API");
-      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
-      apiKey = deepSeekApiKey;
-      modelName = 'deepseek-coder';
-      
-      requestBody = {
-        model: modelName,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
+      ],
+      generationConfig: {
         temperature: 0.7,
-        max_tokens: 1500,
-      };
-      
-      // Transform DeepSeek API response
-      transformResponse = (data) => {
-        return { answer: data.choices[0].message.content };
-      };
-    } else if (fastApiKey) {
-      console.log("Using FAST API");
-      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
-      apiKey = fastApiKey;
-      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
-      
-      requestBody = {
-        model: modelName,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
-      };
-      
-      // Transform FAST API response
-      transformResponse = (data) => {
-        return { answer: data.choices[0].message.content };
-      };
-    }
+        maxOutputTokens: 1500,
+      }
+    };
 
-    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with ${modelName}`);
+    console.log(`Processing prompt: "${prompt.slice(0, 50)}..." with Gemini API`);
 
     const headers = {
       'Content-Type': 'application/json',
     };
     
-    // Add authorization header for DeepSeek and FAST APIs
-    if (deepSeekApiKey || fastApiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    }
-
-    const response = await fetch(apiUrl, {
+    // Add API key as query param for Gemini
+    const response = await fetch(`${apiUrl}?key=${geminiApiKey}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
@@ -142,12 +78,18 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('AI API error:', error);
-      throw new Error(`AI API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('Gemini API error:', error);
+      throw new Error(`Gemini API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    const result = transformResponse(data);
+    
+    // Transform Gemini API response
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error("No response generated from Gemini");
+    }
+    
+    const result = { answer: data.candidates[0].content.parts[0].text };
     console.log(`Generated response of length: ${result.answer.length} characters`);
 
     return new Response(

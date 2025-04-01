@@ -20,111 +20,45 @@ serve(async (req) => {
       throw new Error("Valid messages array is required");
     }
 
-    // Try API keys in order: Gemini, DeepSeek, FAST
+    // Use only Gemini API
     const geminiApiKey = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyDWWJW4xqbHpW7LbFMS0PehZSNasLGPZZo';
-    const deepSeekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
-    const fastApiKey = Deno.env.get('FAST_API_KEY');
     
-    if (!geminiApiKey && !deepSeekApiKey && !fastApiKey) {
-      throw new Error("No AI API key found (GEMINI_API_KEY, DEEPSEEK_API_KEY, or FAST_API_KEY)");
+    if (!geminiApiKey) {
+      throw new Error("Gemini API key is required");
     }
     
-    // Check which API we'll use
-    let apiUrl, apiKey, modelName, requestBody, transformResponse;
+    console.log("Using Gemini API");
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
     
-    if (geminiApiKey) {
-      console.log("Using Gemini API");
-      apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-      apiKey = geminiApiKey;
-      modelName = 'gemini-pro';
-      
-      // Format for Gemini API
-      const systemPrompt = 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.';
-      
-      // First message is the system prompt
-      requestBody = {
-        contents: [
-          {
-            parts: [
-              { text: systemPrompt }
-            ]
-          },
-          ...messages.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.content }]
-          }))
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        }
-      };
-      
-      // Transform Gemini API response to chat format
-      transformResponse = (data) => {
-        if (!data.candidates || data.candidates.length === 0) {
-          throw new Error("No response generated from Gemini");
-        }
-        const content = data.candidates[0].content.parts[0].text;
-        return { content };
-      };
-      
-      // Add API key as query param for Gemini
-      apiUrl = `${apiUrl}?key=${apiKey}`;
-    } else if (deepSeekApiKey) {
-      console.log("Using DeepSeek API");
-      apiUrl = 'https://api.deepseek.com/v1/chat/completions';
-      apiKey = deepSeekApiKey;
-      modelName = 'deepseek-chat';
-      
-      requestBody = {
-        model: modelName,
-        messages: [
-          { role: 'system', content: 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.' },
-          ...messages
-        ],
+    // Format for Gemini API
+    const systemPrompt = 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.';
+    
+    // Create Gemini-formatted messages
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            { text: systemPrompt }
+          ]
+        },
+        ...messages.map(msg => ({
+          parts: [{ text: msg.content }]
+        }))
+      ],
+      generationConfig: {
         temperature: 0.7,
-        max_tokens: 1000,
-      };
-      
-      // Transform DeepSeek API response to chat format
-      transformResponse = (data) => {
-        return data.choices[0].message;
-      };
-    } else if (fastApiKey) {
-      console.log("Using FAST API");
-      apiUrl = 'https://api.fastai-hf.com/v1/chat/completions';
-      apiKey = fastApiKey;
-      modelName = 'mistralai/Mistral-7B-Instruct-v0.2';
-      
-      requestBody = {
-        model: modelName,
-        messages: [
-          { role: 'system', content: 'You are a helpful AI assistant for SkillNest, a learning platform. Be concise, friendly, and helpful. Use markdown for formatting and code blocks where appropriate.' },
-          ...messages
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      };
-      
-      // Transform FAST API response to chat format
-      transformResponse = (data) => {
-        return data.choices[0].message;
-      };
-    }
+        maxOutputTokens: 1000,
+      }
+    };
 
-    console.log(`Processing chat with ${messages.length} messages using ${modelName}`);
+    console.log(`Processing chat with ${messages.length} messages using Gemini API`);
 
     const headers = {
       'Content-Type': 'application/json',
     };
     
-    // Add authorization header for DeepSeek and FAST APIs
-    if (deepSeekApiKey || fastApiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
-    }
-
-    const response = await fetch(apiUrl, {
+    // Add API key as query param for Gemini
+    const response = await fetch(`${apiUrl}?key=${geminiApiKey}`, {
       method: 'POST',
       headers,
       body: JSON.stringify(requestBody),
@@ -132,12 +66,18 @@ serve(async (req) => {
 
     if (!response.ok) {
       const error = await response.json();
-      console.error('AI API error:', error);
-      throw new Error(`AI API error: ${error.error?.message || 'Unknown error'}`);
+      console.error('Gemini API error:', error);
+      throw new Error(`Gemini API error: ${error.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
-    const answer = transformResponse(data);
+    
+    // Transform Gemini API response
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error("No response generated from Gemini");
+    }
+    
+    const answer = { content: data.candidates[0].content.parts[0].text };
     console.log(`Generated response of length: ${answer.content.length} characters`);
 
     return new Response(
