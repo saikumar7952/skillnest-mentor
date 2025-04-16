@@ -42,15 +42,16 @@ const ResumeAnalysis = () => {
     missingKeywords: ['React Native', 'Docker', 'Kubernetes', 'CI/CD', 'TypeScript', 'AWS']
   };
   
-  const handleResumeUpload = useCallback((e) => {
+  const handleResumeUpload = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.pdf,.doc,.docx';
     
-    fileInput.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
+    fileInput.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0];
         setResumeName(file.name);
         setResumeUploaded(true);
         setShowUploadDialog(false);
