@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import type { User, Session } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -13,6 +14,8 @@ interface AuthContextProps {
   profile: Profile | null;
   signOut: () => Promise<void>;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: any | null }>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -23,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -55,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user || null);
         
@@ -70,6 +75,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } else {
             setProfile(profileData);
           }
+          
+          // Redirect to roadmap after login if currently on auth page
+          const currentPath = window.location.pathname;
+          if (currentPath === '/auth') {
+            navigate('/roadmap');
+          }
         } else {
           setProfile(null);
         }
@@ -79,12 +90,74 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        toast({
+          title: "Sign in failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error };
+      }
+      
+      toast({
+        title: "Signed in successfully",
+      });
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Sign in failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return { error };
+      }
+      
+      toast({
+        title: "Signed up successfully",
+        description: "Please check your email for verification instructions",
+      });
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Sign up failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return { error };
+    }
+  };
 
   const signOut = async () => {
     try {
       setLoading(true);
       await supabase.auth.signOut();
+      navigate('/auth');
       toast({
         title: "Signed out successfully",
       });
@@ -101,7 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, signOut, loading }}>
+    <AuthContext.Provider value={{ session, user, profile, signOut, loading, signIn, signUp }}>
       {children}
     </AuthContext.Provider>
   );
