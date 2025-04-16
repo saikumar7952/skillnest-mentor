@@ -1,7 +1,7 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, FileText, Check } from 'lucide-react';
+import { ArrowLeft, Upload, FileText, Check, AlertTriangle, Download } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -9,46 +9,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const ResumeAnalysis = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [resumeUploaded, setResumeUploaded] = useState(false);
+  const [resumeName, setResumeName] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [targetJob, setTargetJob] = useState('');
+  const [showUploadDialog, setShowUploadDialog] = useState(true);
   
   // Mock analysis results - in a real app this would come from the AI backend
   const analysisResults = {
     score: 78,
-    atsCompatibility: 'High',
-    keywordMatch: '72%',
+    atsCompatibility: 'Medium',
+    keywordMatch: '68%',
     improvements: [
-      'Quantify your achievements with metrics and results',
-      'Add more keywords related to cloud technologies',
-      'Strengthen your professional summary',
-      'Include a dedicated skills section'
+      'Quantify your achievements with specific metrics and results',
+      'Add more keywords related to modern JavaScript frameworks',
+      'Strengthen your professional summary to highlight key skills',
+      'Include a dedicated technical skills section',
+      'Add links to your GitHub or portfolio projects'
     ],
     strengths: [
       'Well-organized experience section',
       'Clear job progression shown',
       'Education section is properly formatted',
-      'Appropriate length and conciseness'
+      'Good balance of technical and soft skills'
     ],
-    missingKeywords: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Azure']
+    missingKeywords: ['React Native', 'Docker', 'Kubernetes', 'CI/CD', 'TypeScript', 'AWS']
   };
   
-  const handleResumeUpload = (e) => {
+  const handleResumeUpload = useCallback((e) => {
     e.preventDefault();
-    // This would handle the file upload in a real app
-    setResumeUploaded(true);
-    toast({
-      title: "Resume Uploaded",
-      description: "Your resume has been successfully uploaded for AI analysis."
-    });
-  };
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pdf,.doc,.docx';
+    
+    fileInput.onchange = (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        setResumeName(file.name);
+        setResumeUploaded(true);
+        setShowUploadDialog(false);
+        toast({
+          title: "Resume Uploaded",
+          description: "Your resume has been successfully uploaded for AI analysis."
+        });
+      }
+    };
+    
+    fileInput.click();
+  }, [toast]);
   
-  const handleResumeAnalysis = () => {
+  const handleResumeAnalysis = useCallback(() => {
     if (!targetJob.trim()) {
       toast({
         title: "Target Job Required",
@@ -69,7 +85,7 @@ const ResumeAnalysis = () => {
         description: "Your resume has been analyzed by our AI engine."
       });
     }, 3000);
-  };
+  }, [targetJob, toast]);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,8 +103,8 @@ const ResumeAnalysis = () => {
         <div className="flex flex-col items-center text-center mb-8">
           <h1 className="text-3xl font-medium mb-2">AI Resume Analyzer</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Our AI analyzes your resume against job descriptions, provides ATS compatibility scores, 
-            and suggests targeted improvements.
+            Upload your resume and our AI will analyze it against job descriptions, provide ATS compatibility scores, 
+            and suggest targeted improvements to help you land your dream job.
           </p>
         </div>
         
@@ -120,9 +136,9 @@ const ResumeAnalysis = () => {
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Check className="h-5 w-5 text-green-500" />
-                    <span className="font-medium">Resume_John_Smith.pdf uploaded successfully</span>
+                    <span className="font-medium">{resumeName} uploaded successfully</span>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 gap-1">
+                  <Button variant="ghost" size="sm" className="h-8 gap-1" onClick={handleResumeUpload}>
                     <Upload className="h-3 w-3" />
                     Replace
                   </Button>
@@ -181,7 +197,10 @@ const ResumeAnalysis = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-medium mb-2">Suggested Improvements</h4>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        Suggested Improvements
+                      </h4>
                       <ul className="space-y-2">
                         {analysisResults.improvements.map((item, index) => (
                           <li key={index} className="flex items-start gap-2 text-sm">
@@ -195,7 +214,10 @@ const ResumeAnalysis = () => {
                     </div>
                     
                     <div className="pt-2">
-                      <h4 className="font-medium mb-2">Resume Strengths</h4>
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <Check className="h-4 w-4 text-green-500" />
+                        Resume Strengths
+                      </h4>
                       <ul className="space-y-2">
                         {analysisResults.strengths.map((item, index) => (
                           <li key={index} className="flex items-start gap-2 text-sm">
@@ -237,7 +259,10 @@ const ResumeAnalysis = () => {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
-                  <Button variant="outline">Download Analysis Report</Button>
+                  <Button variant="outline" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Download Analysis
+                  </Button>
                   <Button>Generate Optimized Resume</Button>
                 </div>
               </div>
@@ -245,64 +270,79 @@ const ResumeAnalysis = () => {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>How Our AI Analyzes Your Resume</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                1
-              </div>
-              <div>
-                <h3 className="font-medium mb-1">Natural Language Processing</h3>
-                <p className="text-sm text-muted-foreground">
-                  Our AI uses advanced NLP to extract skills, experiences, and achievements from your resume, 
-                  understanding the context and relevance of each element.
-                </p>
-              </div>
+        {/* Initial Upload Resume Dialog */}
+        <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Upload Your Resume</DialogTitle>
+              <DialogDescription>
+                Our AI will analyze your resume and provide personalized feedback to help you stand out to recruiters.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center p-6">
+              <FileText className="h-16 w-16 text-primary/70 mb-4" />
+              <h3 className="text-lg font-medium mb-2 text-center">Get Professional Resume Feedback</h3>
+              <p className="text-sm text-muted-foreground text-center mb-6">
+                Upload your resume to receive AI-powered feedback on ATS compatibility, missing keywords, and suggested improvements.
+              </p>
+              <Button className="w-full gap-2" onClick={handleResumeUpload}>
+                <Upload className="h-4 w-4" />
+                Select Resume File
+              </Button>
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                Supported formats: PDF, DOC, DOCX
+              </p>
             </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                2
+          </DialogContent>
+        </Dialog>
+        
+        {analysisComplete && (
+          <Card>
+            <CardHeader>
+              <CardTitle>What Next?</CardTitle>
+              <CardDescription>
+                Steps to improve your resume and job search
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  1
+                </div>
+                <div>
+                  <h3 className="font-medium mb-1">Apply the Suggested Improvements</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Incorporate the AI-recommended changes to boost your resume's effectiveness and ATS compatibility.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium mb-1">ATS Simulation</h3>
-                <p className="text-sm text-muted-foreground">
-                  We simulate how Applicant Tracking Systems will parse your resume, identifying potential
-                  formatting issues that could prevent your resume from being properly read.
-                </p>
+              
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  2
+                </div>
+                <div>
+                  <h3 className="font-medium mb-1">Tailor for Each Application</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Customize your resume for each job application by including relevant keywords from the job description.
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                3
+              
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  3
+                </div>
+                <div>
+                  <h3 className="font-medium mb-1">Prepare for Interviews</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Use our <a href="/mock-interviews" className="text-primary hover:underline">Mock Interview</a> feature to practice answering questions related to your resume.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-medium mb-1">Job Description Matching</h3>
-                <p className="text-sm text-muted-foreground">
-                  Our AI compares your resume against thousands of job descriptions for your target role,
-                  identifying key skills and qualifications that recruiters are looking for.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                4
-              </div>
-              <div>
-                <h3 className="font-medium mb-1">Content Optimization</h3>
-                <p className="text-sm text-muted-foreground">
-                  We provide specific suggestions to improve your content, including better action verbs,
-                  achievement quantification, and keyword placement for maximum impact.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
       
       <Footer />
