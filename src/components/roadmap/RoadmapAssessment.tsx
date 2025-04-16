@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { Database } from '@/integrations/supabase/types';
 
 interface RoadmapAssessmentProps {
   userGoals: string[];
@@ -28,11 +26,28 @@ const RoadmapAssessment = ({ userGoals }: RoadmapAssessmentProps) => {
     setIsSubmitting(true);
 
     try {
-      // In a real app, you would call an AI service here to analyze the inputs
-      // For demo purposes, we'll simulate an AI assessment
+      // Prepare the user data for AI analysis
+      const userData = `
+        Education Level: ${educationLevel}
+        Current Skills: ${currentSkills}
+        Career Goal: ${careerGoal}
+      `;
       
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call Ollama AI through Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('ollama-ai', {
+        body: {
+          resumeData: userData,
+          targetJob: careerGoal,
+          requestType: 'careerRoadmap'
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // In a real implementation, we would parse the AI response
+      // For now, we'll use our simulated data
       
       // Save career goal to profile
       if (user) {
@@ -128,7 +143,7 @@ const RoadmapAssessment = ({ userGoals }: RoadmapAssessmentProps) => {
               </div>
               
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Analyzing...' : 'Analyze My Career Path'}
+                {isSubmitting ? 'Analyzing with AI...' : 'Analyze My Career Path'}
               </Button>
             </form>
           </CardContent>

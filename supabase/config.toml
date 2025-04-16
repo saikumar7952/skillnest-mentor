@@ -1,1 +1,4 @@
+
 project_id = "ticowxyacvnzsukdpzjv"
+[functions.ollama-ai]
+verify_jwt = true

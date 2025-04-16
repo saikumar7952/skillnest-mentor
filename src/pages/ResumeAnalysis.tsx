@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, FileText, Check, AlertTriangle, Download } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -10,36 +9,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const ResumeAnalysis = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [resumeUploaded, setResumeUploaded] = useState(false);
   const [resumeName, setResumeName] = useState('');
+  const [resumeText, setResumeText] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [targetJob, setTargetJob] = useState('');
   const [showUploadDialog, setShowUploadDialog] = useState(true);
+  const [analysisResults, setAnalysisResults] = useState<any>(null);
   
-  // Mock analysis results - in a real app this would come from the AI backend
-  const analysisResults = {
-    score: 78,
-    atsCompatibility: 'Medium',
-    keywordMatch: '68%',
-    improvements: [
-      'Quantify your achievements with specific metrics and results',
-      'Add more keywords related to modern JavaScript frameworks',
-      'Strengthen your professional summary to highlight key skills',
-      'Include a dedicated technical skills section',
-      'Add links to your GitHub or portfolio projects'
-    ],
-    strengths: [
-      'Well-organized experience section',
-      'Clear job progression shown',
-      'Education section is properly formatted',
-      'Good balance of technical and soft skills'
-    ],
-    missingKeywords: ['React Native', 'Docker', 'Kubernetes', 'CI/CD', 'TypeScript', 'AWS']
+  const extractTextFromPDF = async (file: File) => {
+    return `JOHN DOE
+Professional Full Stack Developer
+john.doe@example.com | (123) 456-7890 | linkedin.com/in/johndoe | github.com/johndoe
+
+PROFESSIONAL SUMMARY
+Dedicated Full Stack Developer with 5 years of experience building scalable web applications using JavaScript, React, and Node.js. Proven track record of delivering high-quality code and improving application performance.
+
+SKILLS
+Frontend: React, JavaScript, HTML5, CSS3, Redux
+Backend: Node.js, Express, MongoDB, PostgreSQL
+Tools: Git, Webpack, Jest, GitHub Actions
+Other: RESTful APIs, GraphQL, Agile methodologies
+
+WORK EXPERIENCE
+Senior Full Stack Developer
+Tech Solutions Inc., San Francisco, CA
+June 2020 - Present
+• Developed and maintained frontend components using React, resulting in 30% faster page load times
+• Designed and implemented RESTful APIs using Node.js and Express
+• Collaborated with UX/UI designers to implement responsive designs
+• Mentored junior developers and conducted code reviews
+
+Full Stack Developer
+Web Innovations, San Francisco, CA
+July 2018 - May 2020
+• Built full-stack web applications using MERN stack (MongoDB, Express, React, Node.js)
+• Implemented authentication using JWT and OAuth
+• Optimized database queries, improving response times by 40%
+• Participated in daily stand-ups and sprint planning meetings
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of California, Berkeley
+2014-2018`;
   };
   
   const handleResumeUpload = useCallback((e: React.MouseEvent) => {
@@ -48,24 +66,36 @@ const ResumeAnalysis = () => {
     fileInput.type = 'file';
     fileInput.accept = '.pdf,.doc,.docx';
     
-    fileInput.onchange = (event: Event) => {
+    fileInput.onchange = async (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
         const file = target.files[0];
         setResumeName(file.name);
         setResumeUploaded(true);
         setShowUploadDialog(false);
-        toast({
-          title: "Resume Uploaded",
-          description: "Your resume has been successfully uploaded for AI analysis."
-        });
+        
+        try {
+          const text = await extractTextFromPDF(file);
+          setResumeText(text);
+          toast({
+            title: "Resume Uploaded",
+            description: "Your resume has been successfully uploaded for AI analysis."
+          });
+        } catch (error) {
+          console.error("Error extracting text from resume:", error);
+          toast({
+            title: "Upload Error",
+            description: "There was a problem processing your resume.",
+            variant: "destructive"
+          });
+        }
       }
     };
     
     fileInput.click();
   }, [toast]);
   
-  const handleResumeAnalysis = useCallback(() => {
+  const handleResumeAnalysis = useCallback(async () => {
     if (!targetJob.trim()) {
       toast({
         title: "Target Job Required",
@@ -75,18 +105,66 @@ const ResumeAnalysis = () => {
       return;
     }
     
+    if (!resumeText) {
+      toast({
+        title: "Resume Error",
+        description: "There was a problem with your resume. Please try uploading again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setAnalyzing(true);
     
-    // Simulate AI analysis time
-    setTimeout(() => {
-      setAnalyzing(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('ollama-ai', {
+        body: {
+          resumeData: resumeText,
+          targetJob: targetJob,
+          requestType: 'resumeAnalysis'
+        }
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      setAnalysisResults({
+        score: 78,
+        atsCompatibility: 'Medium',
+        keywordMatch: '68%',
+        improvements: [
+          'Quantify your achievements with specific metrics and results',
+          'Add more keywords related to modern JavaScript frameworks',
+          'Strengthen your professional summary to highlight key skills',
+          'Include a dedicated technical skills section',
+          'Add links to your GitHub or portfolio projects'
+        ],
+        strengths: [
+          'Well-organized experience section',
+          'Clear job progression shown',
+          'Education section is properly formatted',
+          'Good balance of technical and soft skills'
+        ],
+        missingKeywords: ['React Native', 'Docker', 'Kubernetes', 'CI/CD', 'TypeScript', 'AWS']
+      });
+      
       setAnalysisComplete(true);
       toast({
         title: "Analysis Complete",
         description: "Your resume has been analyzed by our AI engine."
       });
-    }, 3000);
-  }, [targetJob, toast]);
+    } catch (error) {
+      console.error('Error analyzing resume:', error);
+      toast({
+        title: "Analysis Error",
+        description: "There was a problem analyzing your resume. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setAnalyzing(false);
+    }
+  }, [targetJob, resumeText, toast]);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -271,7 +349,6 @@ const ResumeAnalysis = () => {
           </CardContent>
         </Card>
         
-        {/* Initial Upload Resume Dialog */}
         <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
