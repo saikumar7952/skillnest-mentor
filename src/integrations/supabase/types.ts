@@ -9,7 +9,229 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      career_paths: {
+        Row: {
+          created_at: string | null
+          id: string
+          progress: number | null
+          role_id: string | null
+          status: string | null
+          time_estimate: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          role_id?: string | null
+          status?: string | null
+          time_estimate?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          role_id?: string | null
+          status?: string | null
+          time_estimate?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "career_paths_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "career_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "career_paths_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      career_roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          industry: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          industry?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      learning_modules: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          estimated_time: string | null
+          id: string
+          order_index: number | null
+          role_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          estimated_time?: string | null
+          id?: string
+          order_index?: number | null
+          role_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          estimated_time?: string | null
+          id?: string
+          order_index?: number | null
+          role_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_modules_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "career_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_items: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          id: string
+          module_id: string | null
+          order_index: number | null
+          title: string
+          type: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          order_index?: number | null
+          title: string
+          type: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          order_index?: number | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_items_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "learning_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          current_skills: string[] | null
+          education_level: string | null
+          first_name: string | null
+          goals: string[] | null
+          id: string
+          last_name: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_skills?: string[] | null
+          education_level?: string | null
+          first_name?: string | null
+          goals?: string[] | null
+          id: string
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_skills?: string[] | null
+          education_level?: string | null
+          first_name?: string | null
+          goals?: string[] | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      skill_assessments: {
+        Row: {
+          created_at: string | null
+          id: string
+          role_id: string | null
+          skill_gaps: string[] | null
+          strengths: string[] | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role_id?: string | null
+          skill_gaps?: string[] | null
+          strengths?: string[] | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role_id?: string | null
+          skill_gaps?: string[] | null
+          strengths?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_assessments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "career_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "skill_assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
